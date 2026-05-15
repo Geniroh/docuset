@@ -1,11 +1,4 @@
-import path from "path";
-import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-
-const adapter = new PrismaBetterSqlite3({
-  url: path.join(process.cwd(), "prisma", "dev.db"),
-});
-const prisma = new PrismaClient({ adapter });
+import { prisma } from "../../src/config/db";
 
 async function seedRBAC() {
   console.log("Starting RBAC seeding...");

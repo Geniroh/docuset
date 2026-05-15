@@ -5,6 +5,11 @@ import { prisma } from "../config/db";
 import { hashPassword, comparePassword } from "../utils/formater";
 import { appEvents } from "../lib/event";
 import config from "../config/config";
+import {
+  ConflictError,
+  ForbiddenError,
+  UnauthorizedError,
+} from "../lib/errors";
 
 interface TokenPayload {
   userId: string;
@@ -32,7 +37,7 @@ export async function register(data: { email: string; password: string }) {
   const existing = await prisma.user.findUnique({
     where: { email: data.email.toLowerCase().trim() },
   });
-  if (existing) throw new Error("Email already registered");
+  if (existing) throw new ConflictError("Email already registered");
   const passwordHash = await hashPassword(data.password);
   const user = await prisma.user.create({
     data: {
@@ -78,11 +83,11 @@ export async function login(
       email: data.email,
       deviceInfo: deviceInfo ?? "unknown",
     });
-    throw new Error("Invalid email or password");
+    throw new UnauthorizedError("Invalid credentials");
   }
 
   if (!user.isActive) {
-    throw new Error("Account is disabled");
+    throw new ForbiddenError("Account is disabled");
   }
 
   const accessToken = signAccessToken({
@@ -109,7 +114,11 @@ export async function login(
     deviceInfo: deviceInfo ?? "unknown",
   });
 
-  return { accessToken, refreshToken };
+  return {
+    accessToken,
+    refreshToken,
+    user: { email: user.email, tier: user.tier },
+  };
 }
 
 export async function refreshToken(token: string) {
@@ -120,7 +129,7 @@ export async function refreshToken(token: string) {
       userId: string;
     };
   } catch {
-    throw new Error("Invalid or expired refresh token");
+    throw new UnauthorizedError("Invalid or expired refresh token");
   }
 
   // Check the token hash exists in DB (detects revoked/already-rotated tokens)
@@ -130,11 +139,11 @@ export async function refreshToken(token: string) {
   });
 
   if (!stored || stored.expiresAt < new Date()) {
-    throw new Error("Refresh token not found or expired");
+    throw new UnauthorizedError("Refresh token not found or expired");
   }
 
   if (!stored.user.isActive) {
-    throw new Error("Account is disabled");
+    throw new ForbiddenError("Account is disabled");
   }
 
   // Rotate: delete old token, issue a new one

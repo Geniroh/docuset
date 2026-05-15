@@ -16,7 +16,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 });
 
 // API routes
-app.use("/api", router);
+app.use("/api/v1", router);
 
 // Swagger UI
 app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
