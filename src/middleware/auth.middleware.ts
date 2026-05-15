@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
+import { UnauthorizedError } from "../lib/errors";
 
 export interface AuthRequest extends Request {
   user: {
@@ -12,14 +13,13 @@ export interface AuthRequest extends Request {
 
 export function authenticate(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or malformed Authorization header" });
-    return;
+    return next(new UnauthorizedError("Missing or malformed Authorization header"));
   }
 
   const token = authHeader.slice(7);
@@ -39,6 +39,6 @@ export function authenticate(
 
     next();
   } catch {
-    res.status(401).json({ error: "Invalid or expired token" });
+    next(new UnauthorizedError("Invalid or expired token"));
   }
 }

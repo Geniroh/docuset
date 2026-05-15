@@ -1,18 +1,20 @@
 import { Router } from "express";
 import * as authService from "../services/auth.service";
+import { validate } from "../middleware/validate.middleware";
+import { registerSchema, loginSchema, refreshSchema } from "../validators/auth.validators";
 
 const router = Router();
 
-router.post("/register", async (req, res, next) => {
+router.post("/register", validate(registerSchema), async (req, res, next) => {
   try {
     const user = await authService.register(req.body);
-    res.status(201).json({ user });
+    res.status(201).json({ success: true, data: user });
   } catch (error) {
     next(error);
   }
 });
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", validate(loginSchema), async (req, res, next) => {
   try {
     const result = await authService.login({
       ...req.body,
@@ -24,7 +26,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.post("/refresh", async (req, res, next) => {
+router.post("/refresh", validate(refreshSchema), async (req, res, next) => {
   try {
     const result = await authService.refreshToken(req.body.refreshToken);
     res.json(result);
