@@ -14,6 +14,9 @@
     "ignoreDeprecations": "6.0",
     "types": ["node"]
   },
+  "ts-node": {
+    "files": true
+  },
   "include": ["src/**/*", "tests/helpers"],
   "exclude": ["node_modules", "dist"]
 }

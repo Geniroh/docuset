@@ -3,23 +3,17 @@ import jwt from "jsonwebtoken";
 import config from "../config/config";
 import { UnauthorizedError } from "../lib/errors";
 
-export interface AuthRequest extends Request {
-  user: {
-    userId: string;
-    email: string;
-    tier: string;
-  };
-}
-
 export function authenticate(
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    return next(new UnauthorizedError("Missing or malformed Authorization header"));
+    return next(
+      new UnauthorizedError("Missing or malformed Authorization header"),
+    );
   }
 
   const token = authHeader.slice(7);
@@ -31,8 +25,8 @@ export function authenticate(
       tier: string;
     };
 
-    (req as AuthRequest).user = {
-      userId: payload.userId,
+    req.user = {
+      id: payload.userId,
       email: payload.email,
       tier: payload.tier,
     };

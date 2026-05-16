@@ -1,17 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { getUserPermissions } from "../services/rbac.service";
 import { ForbiddenError } from "../lib/errors";
+import { Permission } from "../constants/permissions";
 
-export function requirePermission(...requiredPermissions: string[]) {
+export function requirePermission(...requiredPermissions: Permission[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!(req as any).user) {
+      if (!req.user) {
         throw new ForbiddenError("Not authenticated");
       }
 
-      const userPermissions = await getUserPermissions(
-        (req as any).user.userId,
-      );
+      const userPermissions = await getUserPermissions(req.user.id);
 
       // Check that the user has ALL required permissions
 

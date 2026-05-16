@@ -5,7 +5,11 @@ import { ValidationError } from "../lib/errors";
 export function validate(schema: ZodSchema) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
-      const parsed = schema.parse({ body: req.body, query: req.query, params: req.params });
+      const parsed = schema.parse({ body: req.body, query: req.query, params: req.params }) as {
+        body?: unknown;
+        query?: unknown;
+        params?: unknown;
+      };
       req.body = parsed.body ?? req.body;
       next();
     } catch (err) {

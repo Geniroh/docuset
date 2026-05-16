@@ -1,65 +1,65 @@
 import { prisma } from "../../src/config/db";
+import { PERMISSIONS } from "../../src/constants/permissions";
+
+const permissionDefs = [
+  {
+    name: PERMISSIONS.DOCUMENTS_CREATE,
+    resource: "documents",
+    action: "create",
+    description: "Upload documents",
+  },
+  {
+    name: PERMISSIONS.DOCUMENTS_READ,
+    resource: "documents",
+    action: "read",
+    description: "View documents",
+  },
+  {
+    name: PERMISSIONS.DOCUMENTS_UPDATE,
+    resource: "documents",
+    action: "update",
+    description: "Edit document metadata",
+  },
+  {
+    name: PERMISSIONS.DOCUMENTS_DELETE,
+    resource: "documents",
+    action: "delete",
+    description: "Delete documents",
+  },
+  {
+    name: PERMISSIONS.CONVERSATIONS_CREATE,
+    resource: "conversations",
+    action: "create",
+    description: "Start conversations",
+  },
+  {
+    name: PERMISSIONS.CONVERSATIONS_READ,
+    resource: "conversations",
+    action: "read",
+    description: "View conversations",
+  },
+  {
+    name: PERMISSIONS.USERS_READ,
+    resource: "users",
+    action: "read",
+    description: "View user list",
+  },
+  {
+    name: PERMISSIONS.USERS_MANAGE,
+    resource: "users",
+    action: "manage",
+    description: "Manage user accounts",
+  },
+  {
+    name: PERMISSIONS.ROLES_MANAGE,
+    resource: "roles",
+    action: "manage",
+    description: "Manage roles and permissions",
+  },
+];
 
 async function seedRBAC() {
   console.log("Starting RBAC seeding...");
-
-  // Define permissions
-  const permissionDefs = [
-    {
-      name: "documents:create",
-      resource: "documents",
-      action: "create",
-      description: "Upload documents",
-    },
-    {
-      name: "documents:read",
-      resource: "documents",
-      action: "read",
-      description: "View documents",
-    },
-    {
-      name: "documents:update",
-      resource: "documents",
-      action: "update",
-      description: "Edit document metadata",
-    },
-    {
-      name: "documents:delete",
-      resource: "documents",
-      action: "delete",
-      description: "Delete documents",
-    },
-    {
-      name: "conversations:create",
-      resource: "conversations",
-      action: "create",
-      description: "Start conversations",
-    },
-    {
-      name: "conversations:read",
-      resource: "conversations",
-      action: "read",
-      description: "View conversations",
-    },
-    {
-      name: "users:read",
-      resource: "users",
-      action: "read",
-      description: "View user list",
-    },
-    {
-      name: "users:manage",
-      resource: "users",
-      action: "manage",
-      description: "Manage user accounts",
-    },
-    {
-      name: "roles:manage",
-      resource: "roles",
-      action: "manage",
-      description: "Manage roles and permissions",
-    },
-  ];
 
   // Upsert all permissions
   const permissions: Record<string, any> = {};
@@ -85,18 +85,18 @@ async function seedRBAC() {
       description: "Standard user",
       isDefault: true,
       permissions: [
-        "documents:create",
-        "documents:read",
-        "documents:update",
-        "conversations:create",
-        "conversations:read",
+        PERMISSIONS.DOCUMENTS_CREATE,
+        PERMISSIONS.DOCUMENTS_READ,
+        PERMISSIONS.DOCUMENTS_UPDATE,
+        PERMISSIONS.CONVERSATIONS_CREATE,
+        PERMISSIONS.CONVERSATIONS_READ,
       ],
     },
     {
       name: "viewer",
       description: "Read-only access",
       isDefault: false,
-      permissions: ["documents:read", "conversations:read"],
+      permissions: [PERMISSIONS.DOCUMENTS_READ, PERMISSIONS.CONVERSATIONS_READ],
     },
   ];
 
