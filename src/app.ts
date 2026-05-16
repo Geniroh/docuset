@@ -3,6 +3,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import router from "./routes";
 import { errorHandler } from "./middleware/error.middleware";
+import "./events";
 
 const app = express();
 
