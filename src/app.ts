@@ -6,8 +6,22 @@ import { errorHandler } from "./middleware/error.middleware";
 import "./events";
 import "./queues/document.worker";
 import { bullBoardAdapter } from "./config/bull-board";
+import { verifyWebhookSignature } from "./middleware/webhook.middleware";
 
 const app = express();
+
+const secret = process.env.WEBHOOK_SECRET!;
+
+app.use(
+  "/webhooks",
+  verifyWebhookSignature(secret, "x-signature"),
+  express.raw({
+    type: "application/json",
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 
 // Middleware
 app.use(express.json());
