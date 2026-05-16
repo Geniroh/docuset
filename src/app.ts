@@ -4,6 +4,8 @@ import { swaggerSpec } from "./config/swagger";
 import router from "./routes";
 import { errorHandler } from "./middleware/error.middleware";
 import "./events";
+import "./queues/document.worker";
+import { bullBoardAdapter } from "./config/bull-board";
 
 const app = express();
 
@@ -15,6 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "OK", timestamp: new Date() });
 });
+
+// Mount the dashboard (protect with auth in production)
+app.use("/admin/queues", bullBoardAdapter.getRouter());
 
 // API routes
 app.use("/api/v1", router);
