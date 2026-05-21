@@ -10,6 +10,10 @@ import { sanitizeInput } from "./middleware/sanitize.middleware";
 import { bullBoardAdapter } from "./config/bull-board";
 import "./events";
 import "./queues/document.worker";
+import { requestLogger } from "./middleware/requestLogger.middleware";
+import { metricsRegistry } from "./lib/metrics";
+import { metricsMiddleware } from "./middleware/metrics.middleware";
+import healthRoutes from "./routes/health.routes";
 
 const app = express();
 const secret = process.env.WEBHOOK_SECRET!;
@@ -46,6 +50,8 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // 4. Input sanitization (after body parsing)
 app.use(sanitizeInput);
+
+app.use(requestLogger);
 
 // Parse allowed origins from env variable (separated by |)
 const allowedOrigins = process.env.FRONTEND_URL
@@ -89,8 +95,14 @@ app.use(
 );
 
 // 5. Health check (before rate limiting if you add it)
-app.get("/api/health", (_req: Request, res: Response) => {
-  res.status(200).json({ status: "OK", timestamp: new Date() });
+app.use(healthRoutes);
+
+app.use(metricsMiddleware);
+
+// Metrics endpoint (no auth — Prometheus needs to scrape it)
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", metricsRegistry.contentType);
+  res.send(await metricsRegistry.metrics());
 });
 
 // 6. Admin routes (add authentication middleware here!)

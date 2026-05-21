@@ -1,5 +1,6 @@
 import { prisma } from "../../src/config/db";
 import { PERMISSIONS } from "../../src/constants/permissions";
+import { logger } from "../../src/utils/logger";
 
 const permissionDefs = [
   {
@@ -59,7 +60,7 @@ const permissionDefs = [
 ];
 
 async function seedRBAC() {
-  console.log("Starting RBAC seeding...");
+  logger.info("Starting RBAC seeding...");
 
   // Upsert all permissions
   const permissions: Record<string, any> = {};
@@ -69,7 +70,7 @@ async function seedRBAC() {
       update: {},
       create: perm,
     });
-    console.log(`✓ Permission: ${perm.name}`);
+    logger.info(`✓ Permission: ${perm.name}`);
   }
 
   // Define roles with their permissions
@@ -127,19 +128,19 @@ async function seedRBAC() {
         },
       });
     }
-    console.log(
+    logger.info(
       `✓ Role: ${roleDef.name} with ${roleDef.permissions.length} permissions`,
     );
   }
 
-  console.log("✅ RBAC seeding completed!");
-  console.log(`  - ${permissionDefs.length} permissions created`);
-  console.log(`  - ${roleDefs.length} roles created`);
+  logger.info("✅ RBAC seeding completed!");
+  logger.info(`  - ${permissionDefs.length} permissions created`);
+  logger.info(`  - ${roleDefs.length} roles created`);
 }
 
 seedRBAC()
   .catch((e) => {
-    console.error("❌ Seeding failed:", e);
+    logger.error("❌ Seeding failed:", e);
     // @ts-ignore
     process.exit(1);
   })

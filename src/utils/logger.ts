@@ -1,19 +1,24 @@
 import winston from "winston";
 import config from "../config/config";
 
-const { combine, timestamp, printf, colorize } = winston.format;
-
-const myFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} ${level}: ${message}`;
-});
-
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   level: config.NODE_ENV === "development" ? "debug" : "info",
-  format: combine(
-    colorize(),
-    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    myFormat,
+  format: winston.format.combine(
+    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+    winston.format.errors({ stack: true }),
+    config.NODE_ENV === "production"
+      ? winston.format.json()
+      : winston.format.combine(
+          winston.format.colorize(),
+          winston.format.printf(({ timestamp, level, message, ...meta }) => {
+            const metaStr = Object.keys(meta).length
+              ? ` ${JSON.stringify(meta)}`
+              : "";
+            return `${timestamp} ${level}: ${message}${metaStr}`;
+          }),
+        ),
   ),
+  defaultMeta: { service: "docuchat" },
   transports: [new winston.transports.Console()],
 });
 

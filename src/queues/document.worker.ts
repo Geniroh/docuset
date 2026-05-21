@@ -4,12 +4,13 @@ import { prisma } from "../config/db";
 import { appEvents } from "../lib/event";
 import { estimateTokens, splitIntoChunks } from "../lib/chunker";
 import { deadLetterQueue } from "./dead-letter.queue";
+import { logger } from "../utils/logger";
 
 const worker = new Worker(
   "document-processing",
   async (job: Job) => {
     const { documentId, userId } = job.data;
-    console.log(
+    logger.info(
       `Processing document ${documentId} (attempt ${job.attemptsMade + 1})`,
     );
 
@@ -84,11 +85,11 @@ const worker = new Worker(
 
 // Event listeners for logging
 worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed: ${job.returnvalue?.chunks} chunks`);
+  logger.info(`Job ${job.id} completed: ${job.returnvalue?.chunks} chunks`);
 });
 
 worker.on("error", (error) => {
-  console.error("Worker error:", error);
+  logger.error("Worker error:", error);
 });
 
 worker.on("failed", async (job, error) => {
@@ -96,7 +97,7 @@ worker.on("failed", async (job, error) => {
 
   // Check if all attempts exhausted
   if (job.attemptsMade >= (job.opts.attempts ?? 3)) {
-    console.error(`Job ${job.id} permanently failed. Moving to DLQ.`);
+    logger.error(`Job ${job.id} permanently failed. Moving to DLQ.`);
 
     await deadLetterQueue.add("failed-document", {
       originalJobId: job.id,
