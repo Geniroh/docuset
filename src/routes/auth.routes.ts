@@ -1,47 +1,17 @@
 import { Router } from "express";
-import * as authService from "../services/auth.service";
 import { validate } from "../middleware/validate.middleware";
-import { registerSchema, loginSchema, refreshSchema } from "../validators/auth.validators";
+import {
+  registerSchema,
+  loginSchema,
+  refreshSchema,
+} from "../validators/auth.validators";
+import * as authController from "../controller/auth.controller";
 
 const router = Router();
 
-router.post("/register", validate(registerSchema), async (req, res, next) => {
-  try {
-    const user = await authService.register(req.body);
-    res.status(201).json({ success: true, data: user });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post("/login", validate(loginSchema), async (req, res, next) => {
-  try {
-    const result = await authService.login({
-      ...req.body,
-      deviceInfo: req.headers["user-agent"],
-    });
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post("/refresh", validate(refreshSchema), async (req, res, next) => {
-  try {
-    const result = await authService.refreshToken(req.body.refreshToken);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post("/logout", async (req, res, next) => {
-  try {
-    await authService.logout(req.body.refreshToken);
-    res.json({ message: "Logged out" });
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/register", validate(registerSchema), authController.register);
+router.post("/login", validate(loginSchema), authController.login);
+router.post("/refresh", validate(refreshSchema), authController.refreshToken);
+router.post("/logout", authController.logout);
 
 export default router;

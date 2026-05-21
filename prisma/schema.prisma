@@ -30,18 +30,20 @@ model User {
 }
 
 model Document {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   userId        String
   title         String
   filename      String
   content       String
   mimeType      String?
   fileSizeBytes Int?
-  chunkCount    Int      @default(0)
-  status        String   @default("pending")
+  chunkCount    Int       @default(0)
+  status        String    @default("pending")
   error         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // null = active, timestamp = soft-deleted
+  deletedBy     String? // Who deleted it (for audit)
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   chunks   Chunk[]
@@ -183,4 +185,15 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+}
+
+model WebhookEvent {
+  id          String    @id // The provider's event ID
+  provider    String // 'stripe', 'github', etc.
+  eventType   String // 'payment.succeeded', etc.
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+  payload     String // Raw payload for debugging
+
+  @@index([provider, eventType])
 }
