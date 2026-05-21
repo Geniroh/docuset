@@ -1,29 +1,42 @@
 import { prisma } from "../config/db";
 import { NotFoundError } from "../lib/errors";
 import { appEvents } from "../lib/event";
+import {
+  cacheGet,
+  cacheSet,
+  cacheDel,
+  CACHE_TTL,
+  cacheGetOrSet,
+} from "../lib/cache";
 
 export async function getUserPermissions(userId: string): Promise<Set<string>> {
-  const userRoles = await prisma.userRole.findMany({
-    where: { userId },
-    include: {
-      role: {
+  const cacheKey = `permissions:${userId}`;
+  const permissions = await cacheGetOrSet(
+    cacheKey,
+    CACHE_TTL.PERMISSIONS,
+    async () => {
+      const userRoles = await prisma.userRole.findMany({
+        where: { userId },
         include: {
-          permissions: {
-            include: { permission: true },
+          role: {
+            include: {
+              permissions: {
+                include: { permission: true },
+              },
+            },
           },
         },
-      },
+      });
+      const perms = new Set<string>();
+      for (const ur of userRoles) {
+        for (const rp of ur.role.permissions) {
+          perms.add(rp.permission.name);
+        }
+      }
+      return [...perms]; // Return as array for serialization
     },
-  });
-
-  const permissions = new Set<string>();
-  for (const ur of userRoles) {
-    for (const rp of ur.role.permissions) {
-      permissions.add(rp.permission.name);
-    }
-  }
-
-  return permissions;
+  );
+  return new Set(permissions);
 }
 
 export async function getAllRoles() {

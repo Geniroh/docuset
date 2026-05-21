@@ -27,4 +27,7 @@
 //   deleteDocument
 // );
 
+// router.get('/documents/:id', conditionalGet(), getDocument);
+// router.get('/conversations', conditionalGet(), listConversations);
+
 // export default router;
