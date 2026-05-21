@@ -12,10 +12,10 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await authService.login({
-      ...req.body,
-      deviceInfo: req.headers["user-agent"],
-    });
+    const result = await authService.login(
+      req.body,
+      String(req.headers["user-agent"] ?? "unknown"),
+    );
     res.json(result);
   } catch (error) {
     next(error);

@@ -30,4 +30,22 @@
 // router.get('/documents/:id', conditionalGet(), getDocument);
 // router.get('/conversations', conditionalGet(), listConversations);
 
+// These STACK with the general limiter
+
+// In document routes:
+// router.post('/',
+//   uploadLimiter,            // Upload-specific limit
+//   requirePermission('documents:create'),
+//   validate(createDocumentSchema),
+//   createDocument
+// );
+
+// // In conversation routes:
+// router.post('/:id/messages',
+//   chatLimiter,              // Chat-specific limit
+//   requirePermission('conversations:create'),
+//   validate(sendMessageSchema),
+//   sendMessage
+// );
+
 // export default router;
